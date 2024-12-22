@@ -1,0 +1,37 @@
+[project]
+name = "string-catalog"
+version = "0.1.0"
+description = "A CLI tool for translating Xcode string catalogs."
+readme = "README.md"
+authors = [{ name = "PanicByte" }]
+license = { text = "Apache-2.0" }
+requires-python = ">=3.8"
+classifiers = ["License :: OSI Approved :: Apache Software License"]
+dependencies = [
+    "diskcache>=5.6.3",
+    "httpx[socks]>=0.28.1",
+    "loguru>=0.7.3",
+    "openai>=1.58.1",
+    "pydantic>=2.10.4",
+    "rich>=13.9.4",
+    "typer>=0.15.1",
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = ["ipdb>=0.13.13"]
+
+[project.urls]
+Homepage = "https://github.com/Qing/string-catalog"
+Changelog = "https://github.com/Qing/string-catalog/releases"
+Issues = "https://github.com/Qing/string-catalog/issues"
+CI = "https://github.com/Qing/string-catalog/actions"
+
+[project.scripts]
+string-catalog = "string_catalog.cli:cli"
+
+[project.optional-dependencies]
+test = ["pytest"]
