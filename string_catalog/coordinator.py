@@ -1,7 +1,7 @@
 import copy
 import json
 from pathlib import Path
-from typing import Dict, Optional, Set, Union
+from typing import Dict, Optional, Set, Union, List
 
 from loguru import logger
 from rich.progress import Progress, MofNCompleteColumn
@@ -66,7 +66,7 @@ class TranslationCoordinator:
             except Exception as e:
                 logger.exception(e)
 
-    def _find_catalog_files(self, path: Path) -> list[Path]:
+    def _find_catalog_files(self, path: Path) -> List[Path]:
         """Find all .xcstrings files in the given path"""
         if path.is_file() and path.suffix == ".xcstrings":
             return [path]
