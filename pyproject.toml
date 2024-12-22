@@ -1,6 +1,6 @@
 [project]
 name = "string-catalog"
-version = "0.1.0"
+version = "0.1.1"
 description = "A CLI tool for translating Xcode string catalogs."
 readme = "README.md"
 authors = [{ name = "PanicByte" }]
@@ -25,13 +25,13 @@ build-backend = "setuptools.build_meta"
 dev = ["ipdb>=0.13.13"]
 
 [project.urls]
-Homepage = "https://github.com/Qing/string-catalog"
-Changelog = "https://github.com/Qing/string-catalog/releases"
-Issues = "https://github.com/Qing/string-catalog/issues"
-CI = "https://github.com/Qing/string-catalog/actions"
+Homepage = "https://github.com/Sanster/string-catalog"
+Changelog = "https://github.com/Sanster/string-catalog/releases"
+Issues = "https://github.com/Sanster/string-catalog/issues"
+CI = "https://github.com/Sanster/string-catalog/actions"
 
 [project.scripts]
-string-catalog = "string_catalog.cli:cli"
+string-catalog = "string_catalog.cli:app"
 
 [project.optional-dependencies]
 test = ["pytest"]
