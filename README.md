@@ -49,3 +49,7 @@ To run the tests:
 ```bash
 python -m pytest
 ```
+
+# Acknowledgments
+
+This project is inspired by [swift-translate](https://github.com/hidden-spectrum/swift-translate).
