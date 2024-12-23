@@ -123,6 +123,9 @@ class TranslationCoordinator:
 
             # Process all entries for current target language
             for key, entry in catalog.strings.items():
+                if entry.should_translate is False:
+                    continue
+
                 if not entry.localizations:
                     entry.localizations = {}
 

@@ -79,6 +79,7 @@ class CatalogEntry(BaseModelWithAlias):
         alias="extractionState", default=None
     )
     localizations: Optional[Dict[str, Localization]] = None
+    should_translate: Optional[bool] = Field(alias="shouldTranslate", default=None)
 
 
 class StringCatalog(BaseModelWithAlias):

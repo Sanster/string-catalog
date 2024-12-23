@@ -199,6 +199,18 @@
           }
         }
       }
+    },
+    "should not translated": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "should not translated"
+          }
+        }
+      },
+      "shouldTranslate": false
     }
   },
   "version": "1.0"
