@@ -29,6 +29,8 @@ string-catalog /path_or_dir/to/xcstrings_file --model anthropic/claude-3.5-sonne
 --lang zh-Hant
 ```
 
+- All API call results are cached in the `.translation_cache/` directory and will be used first for subsequent calls.
+
 ## Development
 
 To contribute to this tool, first checkout the code. Then create a new virtual environment:
