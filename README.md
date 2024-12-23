@@ -22,10 +22,11 @@ For help, run:
 string-catalog --help
 ```
 
-You can also use:
-
 ```bash
-python -m string_catalog --help
+export OPENROUTER_API_KEY=sk-or-v1-xxxxx
+string-catalog /path_or_dir/to/xcstrings_file --model anthropic/claude-3.5-sonnet \
+--lang ru \
+--lang zh-Hant
 ```
 
 ## Development
