@@ -3,8 +3,9 @@ import json
 from pathlib import Path
 from typing import Dict, Optional, Set, Union, List
 
-from loguru import logger
 from rich.progress import Progress, MofNCompleteColumn
+from rich.console import Console
+from rich import print
 
 from .models import (
     DeviceCategory,
@@ -25,53 +26,57 @@ class TranslationCoordinator:
     def __init__(
         self,
         translator: OpenAITranslator,
-        target_languages: Optional[Set[Language]] = None,
+        target_languages: Set[Language],
         overwrite: bool = False,
     ):
         self.translator = translator
         self.target_languages = target_languages
         self.overwrite = overwrite
+        self.console = Console()
 
     def translate_files(self, path: Path):
         """Translate all string catalog files in the given path"""
         files = self._find_catalog_files(path)
 
         if not files:
-            logger.error(f"No .xcstrings files found in {path}")
+            print(f"No .xcstrings files found in {path}")
             return
 
-        for file_path in files:
-            logger.info(f"Processing {file_path}")
+        print(f"Target languages: {[lang.value for lang in self.target_languages]}")
 
-            try:
-                catalog = self._load_catalog(file_path)
-                target_languages = (
-                    self.target_languages or self._get_existing_languages(catalog)
-                )
-                logger.info(
-                    f"Target languages: {[lang.value for lang in target_languages]}"
-                )
+        with Progress(
+            *Progress.get_default_columns(), MofNCompleteColumn(), console=self.console
+        ) as progress:
+            file_task = progress.add_task(
+                f"Translating {len(files)} files", total=len(files)
+            )
+            lang_task = progress.add_task(
+                f"Translating {len(self.target_languages)} languages...",
+                total=len(self.target_languages),
+            )
+            entry_task = progress.add_task("Processing entries")
+            for file_path in files:
+                try:
+                    catalog = self._load_catalog(file_path)
+                    progress.log(f"Processing {file_path}")
 
-                with Progress(
-                    *Progress.get_default_columns(), MofNCompleteColumn()
-                ) as progress:
-                    task = progress.add_task(
-                        f"Translating {file_path}", total=len(target_languages)
-                    )
+                    progress.update(lang_task, completed=0)
+
                     self._translate_catalog_entries(
-                        catalog, target_languages, task, progress
+                        catalog, self.target_languages, lang_task, entry_task, progress
                     )
 
-                self._save_catalog(catalog, file_path)
-            except Exception as e:
-                logger.exception(e)
+                    self._save_catalog(catalog, file_path)
+                    progress.update(file_task, advance=1)
+                except Exception:
+                    self.console.print_exception(show_locals=True)
 
     def _find_catalog_files(self, path: Path) -> List[Path]:
         """Find all .xcstrings files in the given path"""
         if path.is_file() and path.suffix == ".xcstrings":
             return [path]
 
-        return list(path.rglob("*.xcstrings"))
+        return [p for p in path.rglob("*.xcstrings") if "translated" not in p.name]
 
     def _load_catalog(self, path: Path) -> StringCatalog:
         """Load string catalog from file"""
@@ -86,7 +91,7 @@ class TranslationCoordinator:
             path if self.overwrite else path.with_suffix(".translated.xcstrings")
         )
 
-        logger.info(f"Saving to {output_path}")
+        self.console.log(f"Saving to {output_path}")
 
         with open(output_path, "w") as f:
             json.dump(
@@ -100,7 +105,8 @@ class TranslationCoordinator:
         self,
         catalog: StringCatalog,
         target_languages: Set[Language],
-        task: int,
+        lang_task: int,
+        entry_task: int,
         progress: Progress,
     ):
         # Move target languages loop to outermost level
@@ -108,7 +114,12 @@ class TranslationCoordinator:
             if target_lang == Language(catalog.source_language):
                 continue
 
-            progress.update(task, description=f"Translating to {target_lang}")
+            progress.update(
+                entry_task,
+                completed=0,
+                description=f"Processing {len(catalog.strings.items())} entries",
+                total=len(catalog.strings),
+            )
 
             # Process all entries for current target language
             for key, entry in catalog.strings.items():
@@ -168,7 +179,9 @@ class TranslationCoordinator:
                             entry.comment,
                         )
 
-            progress.update(task, advance=1)
+                progress.update(entry_task, advance=1)
+
+            progress.update(lang_task, advance=1)
 
     def _translate_variations(
         self,
@@ -225,11 +238,3 @@ class TranslationCoordinator:
             )
             variations_dict[key] = variation
         return variations_dict
-
-    def _get_existing_languages(self, catalog: StringCatalog) -> Set[Language]:
-        """Get set of languages already present in catalog"""
-        languages = {Language(catalog.source_language)}
-        for entry in catalog.strings.values():
-            if entry.localizations:
-                languages.update(Language(lang) for lang in entry.localizations.keys())
-        return languages

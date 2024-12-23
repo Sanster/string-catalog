@@ -2,6 +2,13 @@ from typing import Optional
 import openai
 from openai import OpenAI
 from diskcache import Cache
+from tenacity import retry, stop_after_attempt, wait_exponential
+
+
+class TranslationError(Exception):
+    """Raised when translation fails"""
+
+    pass
 
 
 class OpenAITranslator:
@@ -16,6 +23,11 @@ class OpenAITranslator:
         self.model = model
         self.cache = Cache(cache_dir)
 
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=3, max=10),
+        retry_error_cls=TranslationError,
+    )
     def translate(
         self, text: str, target_language: str, comment: Optional[str] = None
     ) -> str:
@@ -52,9 +64,3 @@ class OpenAITranslator:
 
         except openai.OpenAIError as e:
             raise TranslationError(f"OpenAI translation failed: {str(e)}")
-
-
-class TranslationError(Exception):
-    """Raised when translation fails"""
-
-    pass

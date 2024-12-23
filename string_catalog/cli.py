@@ -31,7 +31,7 @@ def translate(
         "-m",
     ),
     languages: List[Language] = typer.Option(
-        None,
+        ...,
         "--lang",
         "-l",
         help="Target language(s) or 'all' for all common languages",
