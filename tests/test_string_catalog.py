@@ -23,6 +23,11 @@ def mock_translator():
         ("%arg cats", "zh-Hans"): "%arg 猫",
         ("%arg kitten", "zh-Hans"): "%arg 小猫",
         ("%arg kittens", "zh-Hans"): "%arg 小猫",
+        ("Key is source language content", "zh-Hans"): "键是源语言内容",
+        (
+            "Key is source language content and contain other language",
+            "zh-Hans",
+        ): "键是源语言内容并包含其他语言",
     }.get((text, lang), f"TRANSLATED_{text}")
     return translator
 

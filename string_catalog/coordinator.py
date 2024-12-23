@@ -123,11 +123,18 @@ class TranslationCoordinator:
 
             # Process all entries for current target language
             for key, entry in catalog.strings.items():
-                if (
-                    not entry.localizations
-                    or catalog.source_language not in entry.localizations
-                ):
-                    continue
+                if not entry.localizations:
+                    entry.localizations = {}
+
+                should_delete_source_lang_localization = False
+                if catalog.source_language not in entry.localizations:
+                    should_delete_source_lang_localization = True
+                    # create dummy localization for source language, will delete when finish
+                    entry.localizations[catalog.source_language.value] = Localization(
+                        string_unit=StringUnit(
+                            state=TranslationState.TRANSLATED, value=key
+                        )
+                    )
 
                 source_localization = entry.localizations[catalog.source_language]
                 source_string_unit = source_localization.string_unit
@@ -180,6 +187,9 @@ class TranslationCoordinator:
                         )
 
                 progress.update(entry_task, advance=1)
+
+                if should_delete_source_lang_localization:
+                    del entry.localizations[catalog.source_language]
 
             progress.update(lang_task, advance=1)
 

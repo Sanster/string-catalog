@@ -18,6 +18,34 @@
         }
       }
     },
+    "Key is source language content": {
+      "extractionState": "manual",
+      "localizations": {
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "键是源语言内容"
+          }
+        }
+      }
+    },
+    "Key is source language content and contain other language": {
+      "extractionState": "manual",
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "this is translated"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "键是源语言内容并包含其他语言"
+          }
+        }
+      }
+    },
     "pluralKey": {
       "extractionState": "manual",
       "localizations": {
@@ -171,9 +199,6 @@
           }
         }
       }
-    },
-    "emptyLocalizationKey": {
-      "extractionState": "manual"
     }
   },
   "version": "1.0"

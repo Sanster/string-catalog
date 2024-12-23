@@ -12,6 +12,20 @@
         }
       }
     },
+    "Key is source language content": {
+      "extractionState": "manual"
+    },
+    "Key is source language content and contain other language": {
+      "extractionState": "manual",
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "this is translated"
+          }
+        }
+      }
+    },
     "pluralKey": {
       "extractionState": "manual",
       "localizations": {
@@ -93,9 +107,6 @@
           }
         }
       }
-    },
-    "emptyLocalizationKey": {
-      "extractionState": "manual"
     }
   },
   "version": "1.0"
