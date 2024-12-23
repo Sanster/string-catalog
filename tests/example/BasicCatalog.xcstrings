@@ -12,6 +12,23 @@
         }
       }
     },
+    "shouldSkipStateTranslated": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Should skip state translated"
+          }
+        },
+        "zh-Hans": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "不应该被翻译"
+          }
+        }
+      }
+    },
     "Key is source language content": {
       "extractionState": "manual"
     },

@@ -145,7 +145,7 @@ class TranslationCoordinator:
                 source_substitutions = source_localization.substitutions
 
                 # Initialize target localization if needed
-                if str(target_lang) not in entry.localizations:
+                if target_lang.value not in entry.localizations:
                     entry.localizations[target_lang.value] = Localization()
 
                 target_localization = entry.localizations[target_lang.value]
