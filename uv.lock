@@ -747,7 +747,7 @@ wheels = [
 
 [[package]]
 name = "string-catalog"
-version = "0.2.1"
+version = "0.2.2"
 source = { editable = "." }
 dependencies = [
     { name = "diskcache" },
