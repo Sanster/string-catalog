@@ -6,6 +6,11 @@
 
 A CLI tool for translating Xcode string catalogs.
 
+My apps using this tool:
+
+- [ByePhotos](https://apps.apple.com/us/app/byephotos-storage-cleanup/id6737446757): Find similar photos and compress large videos to free up space on your iPhone and iCloud.
+- [OptiClean](https://apps.apple.com/ca/app/opticlean-ai-object-remover/id6452387177): Removes unwanted objects from photos using AI, run model fully on device.
+
 ## Installation
 
 Install this tool using `pip`:
