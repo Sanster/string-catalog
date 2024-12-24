@@ -10,3 +10,5 @@ venv
 
 .translation_cache/
 *.translated*
+
+run_string_catalog.sh
