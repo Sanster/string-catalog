@@ -12,7 +12,7 @@
         },
         "zh-Hans": {
           "stringUnit": {
-            "state": "translated",
+            "state": "needs_review",
             "value": "我真的很喜欢测试！"
           }
         }
@@ -40,7 +40,7 @@
       "localizations": {
         "zh-Hans": {
           "stringUnit": {
-            "state": "translated",
+            "state": "needs_review",
             "value": "键是源语言内容"
           }
         }
@@ -57,7 +57,7 @@
         },
         "zh-Hans": {
           "stringUnit": {
-            "state": "translated",
+            "state": "needs_review",
             "value": "键是源语言内容并包含其他语言"
           }
         }
@@ -95,19 +95,19 @@
             "plural": {
               "one": {
                 "stringUnit": {
-                  "state": "new",
+                  "state": "needs_review",
                   "value": "我有 %lld 只猫"
                 }
               },
               "other": {
                 "stringUnit": {
-                  "state": "new",
+                  "state": "needs_review",
                   "value": "我有 %lld 只猫"
                 }
               },
               "zero": {
                 "stringUnit": {
-                  "state": "new",
+                  "state": "needs_review",
                   "value": "我没有猫 :("
                 }
               }
@@ -169,7 +169,7 @@
         },
         "zh-Hans": {
           "stringUnit": {
-            "state": "translated",
+            "state": "needs_review",
             "value": "找到了 %#@arg1@ 和 %#@arg2@"
           },
           "substitutions": {
@@ -180,13 +180,13 @@
                 "plural": {
                   "one": {
                     "stringUnit": {
-                      "state": "new",
+                      "state": "needs_review",
                       "value": "%arg 猫"
                     }
                   },
                   "other": {
                     "stringUnit": {
-                      "state": "new",
+                      "state": "needs_review",
                       "value": "%arg 猫"
                     }
                   }
@@ -200,13 +200,13 @@
                 "plural": {
                   "one": {
                     "stringUnit": {
-                      "state": "new",
+                      "state": "needs_review",
                       "value": "%arg 小猫"
                     }
                   },
                   "other": {
                     "stringUnit": {
-                      "state": "new",
+                      "state": "needs_review",
                       "value": "%arg 小猫"
                     }
                   }
