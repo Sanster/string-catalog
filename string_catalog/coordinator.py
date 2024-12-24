@@ -160,7 +160,7 @@ class TranslationCoordinator:
                             source_string_unit.value, target_lang.value, entry.comment
                         )
                         target_localization.string_unit = StringUnit(
-                            state=TranslationState.TRANSLATED, value=translated_text
+                            state=TranslationState.NEEDS_REVIEW, value=translated_text
                         )
 
                 # Translate variations if they exist
@@ -238,7 +238,7 @@ class TranslationCoordinator:
         if variations_dict is None:
             variations_dict = copy.deepcopy(source_variations_dict)
             for key, variation in variations_dict.items():
-                variation.string_unit.state = TranslationState.NEW
+                variation.string_unit.state = TranslationState.NEEDS_REVIEW
 
         for key, variation in variations_dict.items():
             if variation.string_unit.is_translated:
