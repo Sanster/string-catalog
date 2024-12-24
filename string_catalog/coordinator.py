@@ -98,6 +98,7 @@ class TranslationCoordinator:
                 catalog.model_dump(by_alias=True, exclude_none=True),
                 f,
                 ensure_ascii=False,
+                separators=(",", " : "),
                 indent=2,
             )
 
