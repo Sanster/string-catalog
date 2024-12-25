@@ -27,14 +27,24 @@ For help, run:
 string-catalog --help
 ```
 
+Translate a single xcstrings file or all xcstrings files in a directory
+
 ```bash
 export OPENROUTER_API_KEY=sk-or-v1-xxxxx
-string-catalog /path_or_dir/to/xcstrings_file --model anthropic/claude-3.5-sonnet \
+string-catalog translate /path_or_dir/to/xcstrings_file --model anthropic/claude-3.5-sonnet \
 --lang ru \
 --lang zh-Hant
 ```
 
 - All API call results are cached in the `.translation_cache/` directory and will be used first for subsequent calls.
+
+The translation results have a default state of `needs_review`. If you need to update them to `translated` (for example, after reviewing all translations in Xcode and wanting to avoid manually clicking "Mark as Reviewed" for each one), you can use the following command:
+
+```bash
+string-catalog update-state /path_or_dir/to/xcstrings_file \
+--old needs_review \
+--new translated
+```
 
 ## Development
 

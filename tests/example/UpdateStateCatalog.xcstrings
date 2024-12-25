@@ -1,0 +1,113 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "basicKey": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "I really like tests!"
+          }
+        }
+      }
+    },
+    "Key is source language content": {
+      "extractionState": "manual"
+    },
+    "Key is source language content and contain other language": {
+      "extractionState": "manual",
+      "localizations": {
+        "it": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "this is translated"
+          }
+        }
+      }
+    },
+    "pluralKey": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "needs_review",
+                  "value": "I have %lld cat"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "substitutionKey": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Found %#@arg1@ with %#@arg2@"
+          },
+          "substitutions": {
+            "arg1": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "needs_review",
+                      "value": "%arg cat"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg cats"
+                    }
+                  }
+                }
+              }
+            },
+            "arg2": {
+              "argNum": 2,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "needs_review",
+                      "value": "%arg kitten"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg kittens"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "should not translated": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "needs_review",
+            "value": "should not translated"
+          }
+        }
+      },
+      "shouldTranslate": false
+    }
+  },
+  "version": "1.0"
+}

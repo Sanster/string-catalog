@@ -1,7 +1,7 @@
 import copy
 import json
 from pathlib import Path
-from typing import Dict, Optional, Set, Union, List
+from typing import Dict, Optional, Set, Union
 
 from rich.progress import Progress, MofNCompleteColumn
 from rich.console import Console
@@ -20,6 +20,7 @@ from .models import (
 )
 from .translator import OpenAITranslator
 from .language import Language
+from .utils import find_catalog_files, save_catalog
 
 
 class TranslationCoordinator:
@@ -36,7 +37,7 @@ class TranslationCoordinator:
 
     def translate_files(self, path: Path):
         """Translate all string catalog files in the given path"""
-        files = self._find_catalog_files(path)
+        files = find_catalog_files(path)
 
         if not files:
             print(f"No .xcstrings files found in {path}")
@@ -71,19 +72,9 @@ class TranslationCoordinator:
                 except Exception:
                     self.console.print_exception(show_locals=True)
 
-    def _find_catalog_files(self, path: Path) -> List[Path]:
-        """Find all .xcstrings files in the given path"""
-        if path.is_file() and path.suffix == ".xcstrings":
-            return [path]
-
-        return [p for p in path.rglob("*.xcstrings") if "translated" not in p.name]
-
     def _load_catalog(self, path: Path) -> StringCatalog:
         """Load string catalog from file"""
-        with open(path) as f:
-            data = json.load(f)
-
-        return StringCatalog.model_validate(data)
+        return StringCatalog.model_validate_json(path.read_text())
 
     def _save_catalog(self, catalog: StringCatalog, path: Path):
         """Save string catalog to file"""
@@ -93,14 +84,7 @@ class TranslationCoordinator:
 
         self.console.log(f"Saving to {output_path}")
 
-        with open(output_path, "w") as f:
-            json.dump(
-                catalog.model_dump(by_alias=True, exclude_none=True),
-                f,
-                ensure_ascii=False,
-                separators=(",", " : "),
-                indent=2,
-            )
+        save_catalog(catalog, output_path)
 
     def _translate_catalog_entries(
         self,

@@ -1,11 +1,16 @@
+import json
 from pathlib import Path
-from typing import List, Optional
+from typing import List
+from rich import print
 
 import typer
 
 from .translator import OpenAITranslator
 from .coordinator import TranslationCoordinator
 from .language import Language
+from .models import StringCatalog, TranslationState
+from .utils import find_catalog_files, save_catalog, update_string_unit_state
+
 
 app = typer.Typer(
     add_completion=False,
@@ -58,3 +63,26 @@ def translate(
     )
 
     coordinator.translate_files(file_or_directory)
+
+
+@app.command(help="Update the state of stringUnit in xcstrings file")
+def update_state(
+    file_or_directory: Path = typer.Argument(
+        ..., help="File or directory containing string catalogs to update state"
+    ),
+    old: TranslationState = typer.Option(
+        TranslationState.NEEDS_REVIEW, help="Old state to update"
+    ),
+    new: TranslationState = typer.Option(TranslationState.TRANSLATED, help="New state"),
+):
+    files = find_catalog_files(file_or_directory)
+
+    for file in files:
+        with open(file, "r", encoding="utf-8") as f:
+            catalog_dict = json.load(f)
+
+        update_string_unit_state(catalog_dict, old, new)
+
+        catalog = StringCatalog.model_validate(catalog_dict)
+        print(f"Save {file}")
+        save_catalog(catalog, file)
