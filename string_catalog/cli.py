@@ -11,6 +11,10 @@ from .language import Language
 from .models import StringCatalog, TranslationState
 from .utils import find_catalog_files, save_catalog, update_string_unit_state
 
+AVAILABLE_LANGUAGES = "".join(
+    f"| {lang.value}: {lang.name.replace('_', ' ').title()}"
+    for lang in Language
+)
 
 app = typer.Typer(
     add_completion=False,
@@ -39,7 +43,7 @@ def translate(
         ...,
         "--lang",
         "-l",
-        help="Target language(s) or 'all' for all common languages",
+        help=f"Target language(s) or 'all' for all common languages. Available languages: {AVAILABLE_LANGUAGES}",
     ),
     overwrite: bool = typer.Option(
         False, "--overwrite", help="Overwrite existing translations"
