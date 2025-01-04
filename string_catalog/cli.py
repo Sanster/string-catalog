@@ -35,7 +35,7 @@ def translate(
         "--model",
         "-m",
     ),
-    languages: List[Language] = typer.Option(
+    languages: List[str] = typer.Option(
         ...,
         "--lang",
         "-l",
@@ -52,7 +52,11 @@ def translate(
         if len(languages) == 1 and languages[0].lower() == "all":
             target_langs = set(Language.all_common())
         else:
-            target_langs = {Language(lang) for lang in languages}
+            try:
+                target_langs = {Language(lang) for lang in languages}
+            except ValueError as e:
+                print(f"[red]Error: Invalid language code. {str(e)}[/red]")
+                raise typer.Exit(1)
     else:
         target_langs = None
 
