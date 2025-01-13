@@ -36,6 +36,12 @@ string-catalog translate /path_or_dir/to/xcstrings_file --model anthropic/claude
 --lang zh-Hant
 ```
 
+Translate a single xcstrings file and all supported languages using deepseek-v3 API
+
+```bash
+string-catalog translate /path_or_dir/to/xcstrings_file --base-url https://api.deepseek.com --api-key sk-xxxx --model deepseek-chat --lang all
+```
+
 - All API call results are cached in the `.translation_cache/` directory and will be used first for subsequent calls.
 
 The translation results have a default state of `needs_review`. If you need to update them to `translated` (for example, after reviewing all translations in Xcode and wanting to avoid manually clicking "Mark as Reviewed" for each one), you can use the following command:
