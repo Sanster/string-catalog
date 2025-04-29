@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Dict, Optional
+from typing import Dict, Optional, Set
 from pydantic import BaseModel, Field
 
 from string_catalog.language import Language
@@ -87,7 +87,7 @@ class StringCatalog(BaseModelWithAlias):
     strings: Dict[str, CatalogEntry]
     version: str = "1.0"
 
-    def get_languages(self) -> set[Language]:
+    def get_languages(self) -> Set[Language]:
         """
         Returns a set of all languages included in this catalog.
 
