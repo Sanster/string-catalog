@@ -26,16 +26,21 @@ def save_catalog(catalog: StringCatalog, save_path: Path):
 
 
 def update_string_unit_state(data, old: TranslationState, new: TranslationState):
+    modified = False
     if isinstance(data, dict):
         for key, value in data.items():
             if key == "stringUnit" and "state" in value:
                 if value["state"] == old.value:
                     value["state"] = new.value
+                    modified = True
             else:
-                update_string_unit_state(value, old, new)
+                if update_string_unit_state(value, old, new):
+                    modified = True
     elif isinstance(data, list):
         for item in data:
-            update_string_unit_state(item, old, new)
+            if update_string_unit_state(item, old, new):
+                modified = True
+    return modified
 
 
 def delete_languages_from_catalog(

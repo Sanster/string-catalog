@@ -93,11 +93,15 @@ def update_state(
         with open(file, "r", encoding="utf-8") as f:
             catalog_dict = json.load(f)
 
-        update_string_unit_state(catalog_dict, old, new)
+        # Track if any changes were made
+        modified = update_string_unit_state(catalog_dict, old, new)
 
-        catalog = StringCatalog.model_validate(catalog_dict)
-        print(f"Save {file}")
-        save_catalog(catalog, file)
+        if modified:
+            catalog = StringCatalog.model_validate(catalog_dict)
+            print(f"Save {file}")
+            save_catalog(catalog, file)
+        else:
+            print(f"No changes made to {file}")
 
 
 @app.command(
