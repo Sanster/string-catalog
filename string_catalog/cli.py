@@ -63,7 +63,7 @@ def translate(
             try:
                 target_langs = {Language(lang) for lang in languages}
             except ValueError as e:
-                print(f"[red]Error: Invalid language code. {str(e)}[/red]")
+                print(f"Error: Invalid language code. {str(e)}")
                 raise typer.Exit(1)
     else:
         target_langs = None
@@ -98,10 +98,10 @@ def update_state(
 
         if modified:
             catalog = StringCatalog.model_validate(catalog_dict)
-            print(f"Save {file}")
+            print(f"✅ Successfully updated state in {file}")
             save_catalog(catalog, file)
         else:
-            print(f"No changes made to {file}")
+            print(f"ℹ️ No changes made to {file}")
 
 
 @app.command(
@@ -125,13 +125,11 @@ def delete(
     ),
 ):
     if keep_languages and exclude_languages:
-        print(
-            "[red]Error: Cannot specify both --keep and --exclude options together[/red]"
-        )
+        print("Error: Cannot specify both --keep and --exclude options together")
         raise typer.Exit(1)
 
     if not keep_languages and not exclude_languages:
-        print("[red]Error: Must specify either --keep or --exclude option[/red]")
+        print("Error: Must specify either --keep or --exclude option")
         raise typer.Exit(1)
 
     # Convert string languages to Language enum
@@ -140,10 +138,10 @@ def delete(
         try:
             target_langs = {Language(lang) for lang in keep_languages}
             print(
-                f"Keeping only these languages: {[lang.value for lang in target_langs]}"
+                f"ℹ️ Keeping only these languages: {[lang.value for lang in target_langs]}"
             )
         except ValueError as e:
-            print(f"[red]Error: Invalid language code. {str(e)}[/red]")
+            print(f"Error: Invalid language code. {str(e)}")
             raise typer.Exit(1)
 
     exclude_langs = None
@@ -151,15 +149,15 @@ def delete(
         try:
             exclude_langs = {Language(lang) for lang in exclude_languages}
             print(
-                f"Excluding these languages: {[lang.value for lang in exclude_langs]}"
+                f"ℹ️ Excluding these languages: {[lang.value for lang in exclude_langs]}"
             )
         except ValueError as e:
-            print(f"[red]Error: Invalid language code. {str(e)}[/red]")
+            print(f"Error: Invalid language code. {str(e)}")
             raise typer.Exit(1)
 
     files = find_catalog_files(file_or_directory)
     if not files:
-        print(f"No .xcstrings files found in {file_or_directory}")
+        print(f"⚠️ No .xcstrings files found in {file_or_directory}")
         return
 
     for file in files:
@@ -170,7 +168,7 @@ def delete(
         modified = delete_languages_from_catalog(catalog, target_langs, exclude_langs)
 
         if modified:
-            print(f"Saving modified catalog to {file}")
+            print(f"✅ Successfully saved modified catalog to {file}")
             save_catalog(catalog, file)
         else:
-            print(f"No changes made to {file}")
+            print(f"ℹ️ No changes made to {file}")
