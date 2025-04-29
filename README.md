@@ -57,21 +57,13 @@ string-catalog update-state /path_or_dir/to/xcstrings_file \
 To contribute to this tool, first checkout the code. Then create a new virtual environment:
 
 ```bash
-cd string-catalog
-python -m venv venv
-source venv/bin/activate
+uv run string-catalog --help
 ```
 
-Now install the dependencies and test dependencies:
+Test:
 
 ```bash
-pip install -e '.[test]'
-```
-
-To run the tests:
-
-```bash
-python -m pytest
+uv run pytest
 ```
 
 # Acknowledgments
