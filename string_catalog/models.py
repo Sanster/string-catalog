@@ -87,6 +87,27 @@ class StringCatalog(BaseModelWithAlias):
     strings: Dict[str, CatalogEntry]
     version: str = "1.0"
 
+    def get_languages(self) -> set[Language]:
+        """
+        Returns a set of all languages included in this catalog.
+
+        Returns:
+            set[Language]: A set containing the source language and all languages used in localizations.
+        """
+        languages = {self.source_language}
+
+        for entry in self.strings.values():
+            if entry.localizations:
+                for lang in entry.localizations.keys():
+                    # Language codes in localizations are stored as strings
+                    try:
+                        languages.add(Language(lang))
+                    except ValueError:
+                        # Skip invalid language codes
+                        pass
+
+        return languages
+
 
 if __name__ == "__main__":
     string_unit = StringUnit(

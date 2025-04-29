@@ -1,8 +1,9 @@
 import json
-from typing import List
+from typing import List, Set, Optional
 from pathlib import Path
 
 from .models import StringCatalog, TranslationState
+from .language import Language
 
 
 def find_catalog_files(path: Path) -> List[Path]:
@@ -35,3 +36,48 @@ def update_string_unit_state(data, old: TranslationState, new: TranslationState)
     elif isinstance(data, list):
         for item in data:
             update_string_unit_state(item, old, new)
+
+
+def delete_languages_from_catalog(
+    catalog: StringCatalog,
+    keep_languages: Optional[Set[Language]] = None,
+    exclude_languages: Optional[Set[Language]] = None,
+) -> bool:
+    """
+    Delete languages from a string catalog based on keep or exclude lists.
+
+    Args:
+        catalog: The StringCatalog to modify
+        keep_languages: Only keep these languages (and source language)
+        exclude_languages: Delete these languages (preserves source language)
+
+    Returns:
+        bool: True if catalog was modified, False otherwise
+    """
+    source_lang = catalog.source_language.value
+    modified = False
+
+    for key, entry in catalog.strings.items():
+        if not entry.localizations:
+            continue
+
+        languages_to_delete = set()
+
+        # Determine which languages to delete
+        for lang in entry.localizations:
+            # Never delete source language
+            if lang == source_lang:
+                continue
+
+            if keep_languages and Language(lang) not in keep_languages:
+                languages_to_delete.add(lang)
+            elif exclude_languages and Language(lang) in exclude_languages:
+                languages_to_delete.add(lang)
+
+        # Delete the languages
+        for lang in languages_to_delete:
+            if lang in entry.localizations:
+                del entry.localizations[lang]
+                modified = True
+
+    return modified

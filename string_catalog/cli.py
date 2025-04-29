@@ -9,11 +9,15 @@ from .translator import OpenAITranslator
 from .coordinator import TranslationCoordinator
 from .language import Language
 from .models import StringCatalog, TranslationState
-from .utils import find_catalog_files, save_catalog, update_string_unit_state
+from .utils import (
+    find_catalog_files,
+    save_catalog,
+    update_string_unit_state,
+    delete_languages_from_catalog,
+)
 
 AVAILABLE_LANGUAGES = "".join(
-    f"| {lang.value}: {lang.name.replace('_', ' ').title()}"
-    for lang in Language
+    f"| {lang.value}: {lang.name.replace('_', ' ').title()}" for lang in Language
 )
 
 app = typer.Typer(
@@ -94,3 +98,75 @@ def update_state(
         catalog = StringCatalog.model_validate(catalog_dict)
         print(f"Save {file}")
         save_catalog(catalog, file)
+
+
+@app.command(
+    help=f"Delete language from xcstrings file. Available languages: {AVAILABLE_LANGUAGES}"
+)
+def delete(
+    file_or_directory: Path = typer.Argument(
+        ..., help="File or directory containing string catalogs to delete language"
+    ),
+    keep_languages: List[str] = typer.Option(
+        None,
+        "--keep",
+        "-k",
+        help="Only keep these languages",
+    ),
+    exclude_languages: List[str] = typer.Option(
+        None,
+        "--exclude",
+        "-e",
+        help="Delete these languages",
+    ),
+):
+    if keep_languages and exclude_languages:
+        print(
+            "[red]Error: Cannot specify both --keep and --exclude options together[/red]"
+        )
+        raise typer.Exit(1)
+
+    if not keep_languages and not exclude_languages:
+        print("[red]Error: Must specify either --keep or --exclude option[/red]")
+        raise typer.Exit(1)
+
+    # Convert string languages to Language enum
+    target_langs = None
+    if keep_languages:
+        try:
+            target_langs = {Language(lang) for lang in keep_languages}
+            print(
+                f"Keeping only these languages: {[lang.value for lang in target_langs]}"
+            )
+        except ValueError as e:
+            print(f"[red]Error: Invalid language code. {str(e)}[/red]")
+            raise typer.Exit(1)
+
+    exclude_langs = None
+    if exclude_languages:
+        try:
+            exclude_langs = {Language(lang) for lang in exclude_languages}
+            print(
+                f"Excluding these languages: {[lang.value for lang in exclude_langs]}"
+            )
+        except ValueError as e:
+            print(f"[red]Error: Invalid language code. {str(e)}[/red]")
+            raise typer.Exit(1)
+
+    files = find_catalog_files(file_or_directory)
+    if not files:
+        print(f"No .xcstrings files found in {file_or_directory}")
+        return
+
+    for file in files:
+        with open(file, "r", encoding="utf-8") as f:
+            catalog_dict = json.load(f)
+
+        catalog = StringCatalog.model_validate(catalog_dict)
+        modified = delete_languages_from_catalog(catalog, target_langs, exclude_langs)
+
+        if modified:
+            print(f"Saving modified catalog to {file}")
+            save_catalog(catalog, file)
+        else:
+            print(f"No changes made to {file}")
