@@ -1,4 +1,3 @@
-import json
 import os
 import time
 from enum import Enum
@@ -9,6 +8,8 @@ from rich import print
 import httpx
 import typer
 from authlib.jose import jwt
+
+from .whats_new import load_whats_new_json, find_best_matching_locale
 
 
 ASC_BASE_URL = "https://api.appstoreconnect.apple.com/v1"
@@ -134,24 +135,87 @@ def upsert_whats_new(
     updates: Dict[str, str],
 ) -> None:
     existing = list_localizations_by_locale(client, app_store_version_id)
-    for locale, whats_new in updates.items():
-        text = (whats_new or "").strip()
-        if not text:
-            continue
-        if locale in existing:
-            update_localization_whats_new(client, existing[locale]["id"], text)
-            print(f"✅ Successfully updated {locale}")
+    success_count = 0
+    for existing_locale in existing.keys():
+        # Find the best matching locale in updates
+        best_match = find_best_matching_locale(existing_locale, updates)
+
+        if best_match:
+            success_count += 1
+            whats_new = updates[best_match]
+            text = (whats_new or "").strip()
+            if not text:
+                continue
+
+            update_localization_whats_new(client, existing[existing_locale]["id"], text)
+            if best_match == existing_locale:
+                print(f"✅ Successfully updated {existing_locale}")
+            else:
+                print(f"✅ Successfully updated {existing_locale} → {best_match}")
         else:
-            print(f"❌ Locale {locale} not found in existing localizations")
+            print(f"⚠️ No matching content found for existing locale {existing_locale}")
+    print(f"✅ Successfully updated {success_count} locales")
 
 
-def load_updates_from_json(path: str) -> Dict[str, str]:
-    with open(path, "r", encoding="utf-8") as f:
-        payload = json.load(f)
-    if not isinstance(payload, dict):
-        raise ValueError("Input JSON must be an object mapping locale -> whatsNew text")
-    # Coerce everything to str
-    return {str(k): str(v) if v is not None else "" for k, v in payload.items()}
+@app.command("list-locales", help="List all available locales for an app version")
+def list_locales(
+    bundle_id: str = typer.Option(..., "--bundle-id", help="App bundle identifier"),
+    version: str = typer.Option(
+        ..., "--version", help="App version string, e.g. 1.2.3"
+    ),
+    platform: Platform = typer.Option(
+        Platform.IOS, "--platform", help="Target platform"
+    ),
+    issuer_id: Optional[str] = typer.Option(
+        os.getenv("ASC_ISSUER_ID"),
+        "--issuer-id",
+        help="App Store Connect API Issuer ID",
+        envvar=["ASC_ISSUER_ID"],
+    ),
+    key_id: Optional[str] = typer.Option(
+        os.getenv("ASC_KEY_ID"),
+        "--key-id",
+        help="App Store Connect API Key ID",
+        envvar=["ASC_KEY_ID"],
+    ),
+    key_file: Optional[Path] = typer.Option(
+        os.getenv("ASC_KEY_FILE"),
+        "--key-file",
+        help="Path to .p8 private key file",
+        envvar=["ASC_KEY_FILE"],
+    ),
+) -> None:
+    if not issuer_id or not key_id or not key_file:
+        print(
+            "Missing credentials. Provide --issuer-id, --key-id, --key-file or set env ASC_ISSUER_ID, ASC_KEY_ID, ASC_KEY_FILE",
+        )
+        raise typer.Exit(2)
+
+    if not Path(key_file).exists():
+        print(f"Key file not found: {key_file}")
+        raise typer.Exit(2)
+
+    try:
+        private_key_pem = Path(key_file).read_text(encoding="utf-8")
+    except Exception as e:
+        print(f"Failed to read key file: {e}")
+        raise typer.Exit(2)
+
+    auth_bearer = generate_jwt_token(key_id, issuer_id, private_key_pem)
+
+    with build_client(auth_bearer) as client:
+        print("Fetching app id...")
+        app_id = get_app_id(client, bundle_id)
+        print("Fetching app store version id...")
+        version_id = get_app_store_version_id(client, app_id, version, platform.value)
+        print("Fetching existing localizations...")
+        existing = list_localizations_by_locale(client, version_id)
+
+        print("\nAvailable locales:")
+        for locale in existing.keys():
+            print(f"  {locale}")
+
+        print(f"\nTotal locales: {len(existing.keys())}")
 
 
 @app.command(
@@ -205,11 +269,14 @@ def update_whats_new(
 
     auth_bearer = generate_jwt_token(key_id, issuer_id, private_key_pem)
 
-    if not Path(json_path).exists():
+    try:
+        updates = load_whats_new_json(json_path)
+    except FileNotFoundError:
         print(f"JSON file not found: {json_path}")
         raise typer.Exit(2)
-
-    updates = load_updates_from_json(str(json_path))
+    except ValueError as e:
+        print(f"Invalid JSON format: {e}")
+        raise typer.Exit(2)
 
     with build_client(auth_bearer) as client:
         print("Fetching app id...")

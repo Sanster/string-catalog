@@ -15,6 +15,7 @@ from .utils import (
     update_string_unit_state,
     delete_languages_from_catalog,
 )
+from .whats_new import generate_whats_new_json
 
 AVAILABLE_LANGUAGES = "".join(
     f"| {lang.value}: {lang.name.replace('_', ' ').title()}" for lang in Language
@@ -168,3 +169,43 @@ def delete(
         if modified:
             print(f"✅ Successfully saved modified catalog to {file}")
             save_catalog(catalog, file)
+
+
+@app.command(help="Generate What's New JSON file from xcstrings keys")
+def generate_whats_new(
+    xcstrings_file: Path = typer.Argument(..., help="Path to the xcstrings file"),
+    keys: List[str] = typer.Option(
+        ...,
+        "--key",
+        "-k",
+        help="Keys to extract from xcstrings file (can be specified multiple times)",
+    ),
+    output: Path = typer.Option(
+        "whats_new.json", "--output", "-o", help="Output JSON file path"
+    ),
+):
+    """Generate a JSON file for App Store Connect What's New updates from xcstrings keys"""
+    try:
+        whats_new_data = generate_whats_new_json(xcstrings_file, keys, output)
+
+        print(f"✅ Successfully generated What's New JSON file: {output}")
+        print(
+            f"📊 Extracted data for {len(whats_new_data)} language(s): {', '.join(whats_new_data.keys())}"
+        )
+
+        # Show preview of generated content
+        for lang, content in whats_new_data.items():
+            preview = content.replace("\n", " | ")
+            if len(preview) > 100:
+                preview = preview[:97] + "..."
+            print(f"  {lang}: {preview}")
+
+    except FileNotFoundError as e:
+        print(f"❌ {e}")
+        raise typer.Exit(1)
+    except ValueError as e:
+        print(f"❌ {e}")
+        raise typer.Exit(1)
+    except Exception as e:
+        print(f"❌ Error processing xcstrings file: {e}")
+        raise typer.Exit(1)

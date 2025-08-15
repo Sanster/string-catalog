@@ -52,6 +52,44 @@ string-catalog update-state /path_or_dir/to/xcstrings_file \
 --new translated
 ```
 
+## App Store Connect Automation
+
+https://developer.apple.com/documentation/appstoreconnectapi/creating-api-keys-for-app-store-connect-api
+
+生成 What's New JSON 文件
+
+```bash
+string-catalog xcstrings generate-whats-new \
+/Users/cwq/code/xcode/ByePhotos/ByePhotos/Resources/WhatsNewLocalizable.xcstrings \
+--key v1_feature_title \
+--key v1_feature_subtitle \
+--key v2_feature_title \
+--key v2_feature_subtitle
+```
+
+```json
+{
+  "it": "Nuova funzione 1: Titolo\nNuova funzione 2: Titolo",
+  "pt": "Nova funcionalidade 1: Título\nNova funcionalidade 2: Título",
+  "ja": "新機能1: タイトル\n新機能2: タイトル",
+  "zh-Hans": "新功能1: 标题\n新功能2: 标题"
+}
+```
+
+上传
+
+```bash
+export ASC_ISSUER_ID=xxxx
+export ASC_KEY_ID=xxxx
+export ASC_KEY_FILE=xxxx.p8
+
+string-catalog appstore update-whats-new \
+--bundle-id com.xxx.xxx \
+--version 1.0.0 \
+--json-path whats_new.json \
+--platform IOS
+```
+
 ## Development
 
 To contribute to this tool, first checkout the code. Then create a new virtual environment:
