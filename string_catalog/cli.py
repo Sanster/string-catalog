@@ -100,8 +100,6 @@ def update_state(
             catalog = StringCatalog.model_validate(catalog_dict)
             print(f"✅ Successfully updated state in {file}")
             save_catalog(catalog, file)
-        else:
-            print(f"ℹ️ No changes made to {file}")
 
 
 @app.command(
@@ -170,5 +168,3 @@ def delete(
         if modified:
             print(f"✅ Successfully saved modified catalog to {file}")
             save_catalog(catalog, file)
-        else:
-            print(f"ℹ️ No changes made to {file}")
