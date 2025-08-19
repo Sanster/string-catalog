@@ -6,9 +6,10 @@
 
 A CLI tool for translating Xcode string catalogs.
 
-My apps using this tool:
+Apps using this tool:
 
 - [ByePhotos](https://apps.apple.com/us/app/byephotos-storage-cleanup/id6737446757): Find similar photos and compress large videos to free up space on your iPhone and iCloud.
+- [ParkClock](https://apps.apple.com/us/app/parkclock/id6748295364): Parking Timer & Reminder.
 - [OptiClean](https://apps.apple.com/ca/app/opticlean-ai-object-remover/id6452387177): Removes unwanted objects from photos using AI, run model fully on device.
 
 ## Installation
@@ -31,7 +32,8 @@ Translate a single xcstrings file or all xcstrings files in a directory
 
 ```bash
 export OPENROUTER_API_KEY=sk-or-v1-xxxxx
-string-catalog translate /path_or_dir/to/xcstrings_file --model anthropic/claude-3.5-sonnet \
+string-catalog xcstrings translate /path_or_dir/to/xcstrings_file \
+--model anthropic/claude-3.5-sonnet \
 --lang ru \
 --lang zh-Hant
 ```
@@ -39,7 +41,9 @@ string-catalog translate /path_or_dir/to/xcstrings_file --model anthropic/claude
 Translate a single xcstrings file and all supported languages using deepseek-v3 API
 
 ```bash
-string-catalog translate /path_or_dir/to/xcstrings_file --base-url https://api.deepseek.com --api-key sk-xxxx --model deepseek-chat --lang all
+string-catalog xcstrings translate /path_or_dir/to/xcstrings_file \
+--base-url https://api.deepseek.com \
+--api-key sk-xxxx --model deepseek-chat --lang all
 ```
 
 - All API call results are cached in the `.translation_cache/` directory and will be used first for subsequent calls.
@@ -47,25 +51,23 @@ string-catalog translate /path_or_dir/to/xcstrings_file --base-url https://api.d
 The translation results have a default state of `needs_review`. If you need to update them to `translated` (for example, after reviewing all translations in Xcode and wanting to avoid manually clicking "Mark as Reviewed" for each one), you can use the following command:
 
 ```bash
-string-catalog update-state /path_or_dir/to/xcstrings_file \
+string-catalog xcstrings update-state /path_or_dir/to/xcstrings_file \
 --old needs_review \
 --new translated
 ```
 
 ## App Store Connect Automation
 
-https://developer.apple.com/documentation/appstoreconnectapi/creating-api-keys-for-app-store-connect-api
-
-生成 What's New JSON 文件
+Generate What's New JSON file from xcstrings file:
 
 ```bash
 string-catalog xcstrings generate-whats-new \
 /Users/cwq/code/xcode/ByePhotos/ByePhotos/Resources/WhatsNewLocalizable.xcstrings \
---key v1_feature_title \
---key v1_feature_subtitle \
---key v2_feature_title \
---key v2_feature_subtitle
+--key v1.1_feature1 \
+--key v1.1_feature2
 ```
+
+Here is the generated JSON file:
 
 ```json
 {
@@ -76,7 +78,7 @@ string-catalog xcstrings generate-whats-new \
 }
 ```
 
-上传
+Creating `ISSUER_ID`, `KEY_ID`, and `KEY_FILE` for [App Store Connect API](https://developer.apple.com/documentation/appstoreconnectapi/creating-api-keys-for-app-store-connect-api), then update Whats New using the following command:
 
 ```bash
 export ASC_ISSUER_ID=xxxx
