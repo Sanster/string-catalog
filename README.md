@@ -61,8 +61,7 @@ string-catalog xcstrings update-state /path_or_dir/to/xcstrings_file \
 Generate What's New JSON file from xcstrings file:
 
 ```bash
-string-catalog xcstrings generate-whats-new \
-/Users/cwq/code/xcode/ByePhotos/ByePhotos/Resources/WhatsNewLocalizable.xcstrings \
+string-catalog xcstrings generate-whats-new /path_to/WhatsNewLocalizable.xcstrings \
 --key v1.1_feature1 \
 --key v1.1_feature2
 ```
