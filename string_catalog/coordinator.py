@@ -29,10 +29,12 @@ class TranslationCoordinator:
         translator: OpenAITranslator,
         target_languages: Set[Language],
         overwrite: bool = False,
+        ref_language: Optional[Language] = None,
     ):
         self.translator = translator
         self.target_languages = target_languages
         self.overwrite = overwrite
+        self.ref_language = ref_language
         self.console = Console()
 
     def translate_files(self, path: Path):
@@ -44,6 +46,8 @@ class TranslationCoordinator:
             return
 
         print(f"Target languages: {[lang.value for lang in self.target_languages]}")
+        if self.ref_language:
+            print(f"Reference language: {self.ref_language.value}")
 
         with Progress(
             *Progress.get_default_columns(), MofNCompleteColumn(), console=self.console
@@ -129,6 +133,31 @@ class TranslationCoordinator:
                 source_variations = source_localization.variations
                 source_substitutions = source_localization.substitutions
 
+                # Prepare optional reference language context
+                ref_localization = None
+                if self.ref_language:
+                    ref_localization = entry.localizations.get(self.ref_language.value)
+
+                base_comment = entry.comment
+                if (
+                    ref_localization
+                    and ref_localization.string_unit
+                    and ref_localization.string_unit.value
+                ):
+                    ref_text = ref_localization.string_unit.value
+                    ref_line = (
+                        f"Reference translation [{self.ref_language.value}]: {ref_text}"
+                    )
+                    guidance = (
+                        "Use the reference translation line(s) below only to clarify meaning. "
+                        "Do not copy it directly; if it conflicts with the source text, follow the source text."
+                    )
+                    base_comment = (
+                        f"{base_comment}\n\n{guidance}\n{ref_line}"
+                        if base_comment
+                        else f"{guidance}\n{ref_line}"
+                    )
+
                 # Initialize target localization if needed
                 if target_lang.value not in entry.localizations:
                     entry.localizations[target_lang.value] = Localization()
@@ -142,7 +171,9 @@ class TranslationCoordinator:
                         and not target_localization.string_unit.is_translated
                     ) or target_localization.string_unit is None:
                         translated_text = self.translator.translate(
-                            source_string_unit.value, target_lang.value, entry.comment
+                            source_string_unit.value,
+                            target_lang.value,
+                            base_comment,
                         )
                         target_localization.string_unit = StringUnit(
                             state=TranslationState.NEEDS_REVIEW, value=translated_text
@@ -153,8 +184,9 @@ class TranslationCoordinator:
                     self._translate_variations(
                         target_localization,
                         source_variations,
+                        ref_localization.variations if ref_localization else None,
                         target_lang,
-                        entry.comment,
+                        base_comment,
                     )
 
                 if source_substitutions:
@@ -170,8 +202,18 @@ class TranslationCoordinator:
                         self._translate_variations(
                             target_localization.substitutions[k],
                             source_substitution.variations,
+                            (
+                                ref_localization.substitutions.get(k).variations
+                                if (
+                                    ref_localization
+                                    and ref_localization.substitutions
+                                    and k in ref_localization.substitutions
+                                    and ref_localization.substitutions.get(k)
+                                )
+                                else None
+                            ),
                             target_lang,
-                            entry.comment,
+                            base_comment,
                         )
 
                 progress.update(entry_task, advance=1)
@@ -185,6 +227,7 @@ class TranslationCoordinator:
         self,
         variations_parent: Union[Localization, Substitution],
         source_variations: Variations,
+        ref_variations: Optional[Variations],
         lang: Language,
         comment: Optional[str] = None,
     ):
@@ -196,8 +239,10 @@ class TranslationCoordinator:
                 self._translate_variations_plural_device(
                     variations_parent.variations.plural,
                     source_variations.plural,
+                    (ref_variations.plural if ref_variations else None),
                     lang,
                     comment,
+                    variation_kind="plural",
                 )
             )
 
@@ -206,8 +251,10 @@ class TranslationCoordinator:
                 self._translate_variations_plural_device(
                     variations_parent.variations.device,
                     source_variations.device,
+                    (ref_variations.device if ref_variations else None),
                     lang,
                     comment,
+                    variation_kind="device",
                 )
             )
 
@@ -217,8 +264,12 @@ class TranslationCoordinator:
             Dict[Union[PluralQualifier, DeviceCategory], Variation]
         ],
         source_variations_dict: Dict[Union[PluralQualifier, DeviceCategory], Variation],
+        ref_variations_dict: Optional[
+            Dict[Union[PluralQualifier, DeviceCategory], Variation]
+        ],
         lang: Language,
         comment: Optional[str] = None,
+        variation_kind: str = "",
     ):
         if variations_dict is None:
             variations_dict = copy.deepcopy(source_variations_dict)
@@ -231,8 +282,30 @@ class TranslationCoordinator:
             if key not in source_variations_dict:
                 continue
 
+            # Prepare per-variation reference comment if available
+            per_variation_comment = comment
+            if ref_variations_dict and key in ref_variations_dict:
+                ref_text = ref_variations_dict[key].string_unit.value
+                ref_line = (
+                    (
+                        f"Reference translation [{self.ref_language.value}, {variation_kind}={key.value}]: {ref_text}"
+                    )
+                    if self.ref_language
+                    else f"Reference translation [{variation_kind}={key.value}]: {ref_text}"
+                )
+                if comment:
+                    per_variation_comment = f"{comment}\n{ref_line}"
+                else:
+                    guidance = (
+                        "Use the reference translation line(s) below only to clarify meaning. "
+                        "Do not copy it directly; if it conflicts with the source text, follow the source text."
+                    )
+                    per_variation_comment = f"{guidance}\n{ref_line}"
+
             variation.string_unit.value = self.translator.translate(
-                source_variations_dict[key].string_unit.value, lang.value, comment
+                source_variations_dict[key].string_unit.value,
+                lang.value,
+                per_variation_comment,
             )
             variations_dict[key] = variation
         return variations_dict

@@ -42,19 +42,20 @@ class OpenAITranslator:
             f"from English to the language with ISO 639-1 code: {target_language}\n"
             "If the input text contains argument placeholders (%arg, @arg1, %lld, etc), "
             "it's important they are preserved in the translated text.\n"
-            "You should not output anything other than the translated text."
+            "You should not output anything other than the translated text.\n"
         )
 
         if comment:
             system_prompt += f"\n- IMPORTANT: Take into account the following context when translating: {comment}\n"
 
         try:
+            messages = [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": text},
+            ]
             response = self.client.chat.completions.create(
                 model=self.model,
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": text},
-                ],
+                messages=messages,
                 temperature=0.0,
             )
             result = response.choices[0].message.content.strip()

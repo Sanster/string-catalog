@@ -53,6 +53,12 @@ def translate(
     overwrite: bool = typer.Option(
         False, "--overwrite", help="Overwrite existing translations"
     ),
+    ref_language: str = typer.Option(
+        None,
+        "--ref-language",
+        "-r",
+        help="Optional reference language to provide additional context during translation",
+    ),
 ):
     translator = OpenAITranslator(base_url, api_key, model)
 
@@ -69,10 +75,20 @@ def translate(
     else:
         target_langs = None
 
+    # Parse reference language if provided
+    ref_lang_enum = None
+    if ref_language:
+        try:
+            ref_lang_enum = Language(ref_language)
+        except ValueError as e:
+            print(f"Error: Invalid reference language code. {str(e)}")
+            raise typer.Exit(1)
+
     coordinator = TranslationCoordinator(
         translator=translator,
         target_languages=target_langs,
         overwrite=overwrite,
+        ref_language=ref_lang_enum,
     )
 
     coordinator.translate_files(file_or_directory)
