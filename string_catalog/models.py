@@ -37,6 +37,7 @@ class ExtractionState(str, Enum):
     MANUAL = "manual"
     MIGRATED = "migrated"
     UNKNOWN = "unknown"
+    STALE = "stale"
 
 
 class BaseModelWithAlias(BaseModel):
