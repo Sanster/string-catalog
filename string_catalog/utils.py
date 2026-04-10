@@ -1,5 +1,5 @@
 import json
-from typing import List, Set, Optional
+from typing import List, Set, Optional, Tuple
 from pathlib import Path
 
 from .models import StringCatalog, TranslationState
@@ -41,6 +41,39 @@ def update_string_unit_state(data, old: TranslationState, new: TranslationState)
             if update_string_unit_state(item, old, new):
                 modified = True
     return modified
+
+
+def move_keys_between_catalogs(
+    source: StringCatalog,
+    destination: StringCatalog,
+    keys: List[str],
+) -> Tuple[List[str], List[str]]:
+    """
+    Move keys from source catalog to destination catalog.
+
+    Args:
+        source: The source StringCatalog to move keys from
+        destination: The destination StringCatalog to move keys to
+        keys: List of keys to move
+
+    Returns:
+        A tuple of (moved_keys, skipped_keys)
+    """
+    moved = []
+    skipped = []
+
+    for key in keys:
+        if key not in source.strings:
+            skipped.append(key)
+            continue
+
+        # Copy entry to destination
+        destination.strings[key] = source.strings[key]
+        # Remove entry from source
+        del source.strings[key]
+        moved.append(key)
+
+    return moved, skipped
 
 
 def delete_languages_from_catalog(

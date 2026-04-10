@@ -14,6 +14,7 @@ from .utils import (
     save_catalog,
     update_string_unit_state,
     delete_languages_from_catalog,
+    move_keys_between_catalogs,
 )
 from .whats_new import generate_whats_new_json
 
@@ -225,3 +226,52 @@ def generate_whats_new(
     except Exception as e:
         print(f"❌ Error processing xcstrings file: {e}")
         raise typer.Exit(1)
+
+
+@app.command(help="Move keys from one xcstrings file to another")
+def move(
+    source: Path = typer.Argument(..., help="Source xcstrings file to move keys from"),
+    destination: Path = typer.Argument(
+        ..., help="Destination xcstrings file to move keys to"
+    ),
+    keys: List[str] = typer.Option(
+        ...,
+        "--key",
+        "-k",
+        help="Key(s) to move (can be specified multiple times)",
+    ),
+):
+    """Move specified keys from a source xcstrings file to a destination xcstrings file."""
+    if not source.is_file() or source.suffix != ".xcstrings":
+        print(f"❌ Source file is not a valid .xcstrings file: {source}")
+        raise typer.Exit(1)
+
+    if not destination.is_file() or destination.suffix != ".xcstrings":
+        print(f"❌ Destination file is not a valid .xcstrings file: {destination}")
+        raise typer.Exit(1)
+
+    # Load source catalog
+    with open(source, "r", encoding="utf-8") as f:
+        source_dict = json.load(f)
+    source_catalog = StringCatalog.model_validate(source_dict)
+
+    # Load destination catalog
+    with open(destination, "r", encoding="utf-8") as f:
+        dest_dict = json.load(f)
+    dest_catalog = StringCatalog.model_validate(dest_dict)
+
+    moved, skipped = move_keys_between_catalogs(source_catalog, dest_catalog, keys)
+
+    if skipped:
+        print(
+            f"⚠️ Skipped {len(skipped)} key(s) not found in source: {', '.join(skipped)}"
+        )
+
+    if moved:
+        save_catalog(source_catalog, source)
+        save_catalog(dest_catalog, destination)
+        print(
+            f"✅ Successfully moved {len(moved)} key(s) from {source.name} to {destination.name}: {', '.join(moved)}"
+        )
+    else:
+        print("⚠️ No keys were moved")
